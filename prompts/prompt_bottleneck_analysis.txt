@@ -1,0 +1,48 @@
+You are a database performance expert. Analyze the following code for N+1 query problems and other performance bottlenecks.
+
+**Code:**
+```javascript
+[PASTE CODE WITH MULTIPLE QUERIES]
+```
+
+**Context:**
+- Framework: Node.js + Express
+- Database: PostgreSQL
+- Current performance: [e.g., 150ms for dashboard endpoint]
+
+**Requested Analysis:**
+1. Identify N+1 query patterns
+2. Count total queries executed
+3. Suggest consolidation strategies
+4. Provide optimized code example
+
+Please provide:
+- Number of queries in current implementation
+- Number of queries in optimized version
+- Performance improvement estimate
+- Code example with JOINs or batch loading
+
+---
+
+## Example: User Dashboard
+
+**Input Code:**
+```javascript
+// Get user
+const user = await db.query('SELECT * FROM users WHERE id = $1', [userId]);
+
+// Get orders
+const orders = await db.query('SELECT * FROM orders WHERE user_id = $1', [userId]);
+
+// Get items for each order (N+1!)
+for (const order of orders) {
+  const items = await db.query('SELECT * FROM order_items WHERE order_id = $1', [order.id]);
+}
+```
+
+**Gemini Output (Example):**
+- Identified: N+1 pattern in order items loop
+- Current: 1 + 1 + N queries (where N = number of orders)
+- Optimized: Single query with LEFT JOINs
+- Expected: 80% reduction in query time
+

@@ -1,0 +1,5 @@
+timestamp,method,path,duration
+1769353678676,GET,/health,3
+1769353681851,GET,/recommendations/1,721
+1769353683461,GET,/recommendations/1,583
+1769353683479,GET,/metrics,1

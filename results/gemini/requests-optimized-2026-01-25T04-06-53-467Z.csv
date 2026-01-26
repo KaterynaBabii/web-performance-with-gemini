@@ -1,0 +1,4 @@
+timestamp,method,path,duration
+1769314013227,GET,/health,8
+1769314013251,GET,/health,4
+1769314013280,GET,/health,1

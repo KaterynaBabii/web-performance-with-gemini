@@ -1,0 +1,51 @@
+You are a caching strategy consultant. Design a Redis caching strategy for the following endpoint.
+
+**Endpoint:** GET /recommendations/:userId
+
+**Current Implementation:**
+- Expensive computation: Complex JOIN with aggregations
+- Query time: ~180ms average
+- Called: ~50 times/second
+- Data freshness: User preferences change infrequently
+- User behavior: Same user requests recommendations multiple times per session
+
+**Requirements:**
+1. Design cache key structure
+2. Recommend TTL (time-to-live)
+3. Define invalidation rules
+4. Estimate cache hit ratio
+5. Calculate performance improvement
+
+Please provide:
+- Cache key format
+- TTL value and rationale
+- Invalidation triggers
+- Expected cache hit ratio
+- Latency improvement estimate
+
+---
+
+## Example Output
+
+**Cache Key Design:**
+```
+recommendations:{userId}
+```
+
+**TTL Recommendation:**
+- 300 seconds (5 minutes)
+- Rationale: User preferences change infrequently, but recommendations should reflect recent purchases
+
+**Invalidation Rules:**
+- Invalidate on user preference update
+- Invalidate on checkout (user makes purchase)
+- Manual invalidation available
+
+**Expected Cache Hit Ratio:**
+- 80-90% (assuming 3-5 requests per user per session)
+
+**Performance Improvement:**
+- Cache hit: ~2ms (Redis) vs ~180ms (DB query)
+- 98% latency reduction on cache hits
+- 85% overall latency reduction (accounting for cache misses)
+

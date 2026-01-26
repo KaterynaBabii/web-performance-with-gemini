@@ -1,0 +1,3 @@
+timestamp,method,path,duration
+1769314743062,GET,/health,7
+1769314744265,GET,/metrics,4

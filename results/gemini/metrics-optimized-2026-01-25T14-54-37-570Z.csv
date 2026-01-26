@@ -1,0 +1,6 @@
+Metric,Value
+Avg Latency (ms),1900.53
+P95 Latency (ms),5633
+Throughput (req/s),35.84
+Avg DB Query Time (ms),1680.78
+Cache Hit Ratio (%),41.93

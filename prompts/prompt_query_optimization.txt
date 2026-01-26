@@ -1,0 +1,44 @@
+You are a performance engineering assistant. Analyze the following database query and provide optimization recommendations.
+
+**Query:**
+```sql
+[PASTE SLOW QUERY HERE]
+```
+
+**Context:**
+- Database: PostgreSQL 15
+- Table sizes: [products: 1000 rows, orders: 50 rows, etc.]
+- Current performance: [e.g., 200ms average, 450ms p95]
+- Access pattern: [e.g., called 100 times/second]
+
+**Requested Analysis:**
+1. Identify performance bottlenecks
+2. Suggest index recommendations
+3. Propose query rewrite options
+4. Estimate performance improvement
+
+Please provide:
+- Specific index CREATE statements
+- Rewritten query (if applicable)
+- Expected performance improvement
+- Trade-offs or considerations
+
+---
+
+## Example: Product Search Query
+
+**Input Query:**
+```sql
+SELECT p.*, c.name as category_name, c.parent_id
+FROM products p
+JOIN categories c ON p.category_id = c.id
+WHERE p.name LIKE '%laptop%' OR p.description LIKE '%laptop%'
+ORDER BY p.created_at DESC
+```
+
+**Gemini Output (Example):**
+- Identified: Full table scan, no index on category_id, inefficient LIKE
+- Recommendation: GIN index for full-text search, index on category_id
+- Rewrite: Use to_tsvector/to_tsquery for full-text search
+- Expected: 85% reduction in query time
+
