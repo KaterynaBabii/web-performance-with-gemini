@@ -36,14 +36,24 @@ app.get('/health', (req, res) => {
 app.get('/metrics', (req, res) => {
   const { calculateStats } = require('./metrics');
   const stats = calculateStats();
-  
-  // Return expected format
+
+  // Return expected format plus extra fields for variance/debugging
   res.json({
+    // Core paper metrics
     requests: stats.requestCount || 0,
     errors: stats.errorCount || 0,
     avg_ms: stats.avgLatency || 0,
     p95_ms: stats.p95Latency || 0,
-    cache_hit_ratio: stats.cacheHitRatio || 0
+    cache_hit_ratio: stats.cacheHitRatio || 0,
+    throughput: stats.throughput || 0,
+    avg_db_ms: stats.avgDbTime || 0,
+    // Instrumentation fields
+    cache_hits: stats.cacheHits || 0,
+    cache_misses: stats.cacheMisses || 0,
+    warmup_started_at: stats.warmupStartedAt || null,
+    warmup_completed_at: stats.warmupCompletedAt || null,
+    first_request_at: stats.firstRequestAt || null,
+    last_request_at: stats.lastRequestAt || null,
   });
 });
 

@@ -1,0 +1,18 @@
+# Ablation: default DB indexes only (no perf indexes). Redis cache ON (TTL 300s on recommendations).
+# Dashboard N+1, slow search, baseline loop checkout (APP_VERSION=baseline).
+# DB: apply db/indexes_baseline_drop.sql only (do not apply indexes_ablation_index_only.sql).
+services:
+  app:
+    environment:
+      NODE_ENV: production
+      DB_HOST: postgres
+      DB_PORT: "5432"
+      DB_USER: postgres
+      DB_PASSWORD: postgres
+      DB_NAME: web_gemini
+      REDIS_HOST: redis
+      REDIS_PORT: "6379"
+      APP_VERSION: baseline
+      ENABLE_REDIS_CACHE: "1"
+      ENABLE_BATCH_DASHBOARD: "0"
+      ENABLE_OPT_SEARCH: "0"

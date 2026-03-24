@@ -1,0 +1,1 @@
+{"requests":4013,"errors":0,"avg_ms":194.49,"p95_ms":602,"cache_hit_ratio":46.73,"throughput":22.27,"avg_db_ms":180.91,"cache_hits":457,"cache_misses":521,"warmup_started_at":null,"warmup_completed_at":null,"first_request_at":1774136896056,"last_request_at":1774137076250}

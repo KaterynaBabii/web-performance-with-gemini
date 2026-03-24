@@ -1,0 +1,18 @@
+# Ablation: same indexes as index_only + batched dashboard + FTS search path.
+# Redis OFF, baseline loop checkout (APP_VERSION=baseline).
+# DB: apply db/indexes_baseline_drop.sql then db/indexes_ablation_index_only.sql before starting.
+services:
+  app:
+    environment:
+      NODE_ENV: production
+      DB_HOST: postgres
+      DB_PORT: "5432"
+      DB_USER: postgres
+      DB_PASSWORD: postgres
+      DB_NAME: web_gemini
+      REDIS_HOST: redis
+      REDIS_PORT: "6379"
+      APP_VERSION: baseline
+      ENABLE_REDIS_CACHE: "0"
+      ENABLE_BATCH_DASHBOARD: "1"
+      ENABLE_OPT_SEARCH: "1"

@@ -7,6 +7,9 @@ const metrics = {
   dbQueries: [],
   cacheHits: 0,
   cacheMisses: 0,
+  // Instrumentation fields for variance/debugging
+  warmupStartedAt: null,
+  warmupCompletedAt: null,
 };
 
 // Ensure results directory exists
@@ -41,6 +44,15 @@ function recordCacheMiss() {
   metrics.cacheMisses++;
 }
 
+// Optional helpers to record warmup state from application code or scripts
+function markWarmupStarted() {
+  metrics.warmupStartedAt = Date.now();
+}
+
+function markWarmupCompleted() {
+  metrics.warmupCompletedAt = Date.now();
+}
+
 // Calculate percentile
 function percentile(arr, p) {
   if (arr.length === 0) return 0;
@@ -59,6 +71,12 @@ function calculateStats() {
       throughput: 0,
       avgDbTime: 0,
       cacheHitRatio: 0,
+      cacheHits: 0,
+      cacheMisses: 0,
+      warmupStartedAt: metrics.warmupStartedAt,
+      warmupCompletedAt: metrics.warmupCompletedAt,
+      firstRequestAt: null,
+      lastRequestAt: null,
     };
   }
 
@@ -80,8 +98,12 @@ function calculateStats() {
 
   // Calculate throughput (requests per second)
   let throughput = 0;
+  let firstRequestAt = null;
+  let lastRequestAt = null;
   if (metrics.requests.length >= 2) {
-    const timeSpan = (metrics.requests[metrics.requests.length - 1].timestamp - metrics.requests[0].timestamp) / 1000;
+    firstRequestAt = metrics.requests[0].timestamp;
+    lastRequestAt = metrics.requests[metrics.requests.length - 1].timestamp;
+    const timeSpan = (lastRequestAt - firstRequestAt) / 1000;
     throughput = timeSpan > 0 ? metrics.requests.length / timeSpan : 0;
   }
 
@@ -96,6 +118,12 @@ function calculateStats() {
     throughput: Math.round(throughput * 100) / 100,
     avgDbTime: Math.round(avgDbTime * 100) / 100,
     cacheHitRatio: Math.round(cacheHitRatio * 100) / 100,
+    cacheHits: metrics.cacheHits,
+    cacheMisses: metrics.cacheMisses,
+    warmupStartedAt: metrics.warmupStartedAt,
+    warmupCompletedAt: metrics.warmupCompletedAt,
+    firstRequestAt,
+    lastRequestAt,
   };
 }
 

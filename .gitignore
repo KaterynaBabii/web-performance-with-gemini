@@ -1,6 +1,11 @@
 node_modules/
 .env
-results/*.csv
 *.log
 .DS_Store
+__pycache__/
+*.py[cod]
 
+# Benchmark outputs under results/: keep per-run JSON + Locust aggregate CSV only.
+# Ignores metrics/requests export dumps, Locust *_failures/_exceptions/_stats_history, etc.
+results/**/*.csv
+!results/**/locust_*.csv

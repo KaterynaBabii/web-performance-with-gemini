@@ -1,13 +1,15 @@
 #!/usr/bin/env python3
 """
-Compute mean ± standard deviation for IEEE Access paper
-Processes results from 3 independent runs and generates LaTeX-formatted statistics
+Compute mean ± standard deviation for IEEE Access / resubmission.
+Supports six load levels (50–300), 95% CIs, Welch t and Mann–Whitney U (p-values),
+and an optional ablation mode (results/ablation/*).
 """
 
 import json
 import csv
 import os
 import sys
+import math
 import numpy as np
 from pathlib import Path
 from collections import defaultdict
@@ -91,6 +93,190 @@ def compute_stats(values):
     
     return (mean, std, n)
 
+def t_confidence_interval(mean, std, n, alpha=0.05):
+    """
+    Compute two-sided (1-alpha) confidence interval using Student's t.
+    Returns (lower, upper). For n < 2, returns (mean, mean).
+    Uses hard-coded t quantiles for n up to 30; falls back to normal for larger n.
+    """
+    if n < 2 or std == 0:
+        return (mean, mean)
+
+    df = n - 1
+    # Approximate critical values for 95% CI (alpha=0.05)
+    t_table_95 = {
+        1: 12.706,
+        2: 4.303,
+        3: 3.182,
+        4: 2.776,
+        5: 2.571,
+        6: 2.447,
+        7: 2.365,
+        8: 2.306,
+        9: 2.262,
+        10: 2.228,
+        11: 2.201,
+        12: 2.179,
+        13: 2.160,
+        14: 2.145,
+        15: 2.131,
+        16: 2.120,
+        17: 2.110,
+        18: 2.101,
+        19: 2.093,
+        20: 2.086,
+        21: 2.080,
+        22: 2.074,
+        23: 2.069,
+        24: 2.064,
+        25: 2.060,
+        26: 2.056,
+        27: 2.052,
+        28: 2.048,
+        29: 2.045,
+        30: 2.042,
+    }
+    if abs(alpha - 0.05) > 1e-6:
+        # For now, we only support 95% CI
+        alpha = 0.05
+
+    if df in t_table_95:
+        t_crit = t_table_95[df]
+    else:
+        # Large df: approximate with normal 1.96 for 95% CI
+        t_crit = 1.96
+
+    margin = t_crit * (std / math.sqrt(n))
+    return (mean - margin, mean + margin)
+
+def _norm_cdf(z):
+    """Standard normal CDF Phi(z)."""
+    return 0.5 * (1.0 + math.erf(z / math.sqrt(2.0)))
+
+
+def mann_whitney_u_two_sided(sample1, sample2):
+    """
+    Two-sample Mann–Whitney U test (Wilcoxon rank-sum) with tie correction.
+    Uses normal approximation with continuity correction; suitable for n1,n2 >= 4.
+    Returns (U, p_value_two_sided). U is the smaller of U1, U2.
+    """
+    x = np.asarray(sample1, dtype=float)
+    y = np.asarray(sample2, dtype=float)
+    n1, n2 = len(x), len(y)
+    if n1 < 1 or n2 < 1:
+        return float("nan"), float("nan")
+
+    vals = np.concatenate([x, y])
+    grp = np.array([0] * n1 + [1] * n2)
+    n = n1 + n2
+    order = np.argsort(vals, kind="mergesort")
+    sorted_vals = vals[order]
+
+    # Average ranks for ties (1-based ranks)
+    rank_at_sorted_pos = np.empty(n, dtype=float)
+    r = 1
+    i = 0
+    while i < n:
+        j = i
+        while j < n and sorted_vals[j] == sorted_vals[i]:
+            j += 1
+        t = j - i
+        mean_rank = (r + (r + t - 1)) / 2.0
+        rank_at_sorted_pos[i:j] = mean_rank
+        r += t
+        i = j
+
+    ranks = np.empty(n, dtype=float)
+    ranks[order] = rank_at_sorted_pos
+
+    r1 = ranks[grp == 0].sum()
+    u1 = n1 * n2 + n1 * (n1 + 1) / 2.0 - r1
+    u2 = n1 * n2 - u1
+    u = min(u1, u2)
+
+    mu = n1 * n2 / 2.0
+    sv = np.sort(vals)
+    tie_sum = 0.0
+    i = 0
+    while i < len(sv):
+        j = i
+        while j < len(sv) and sv[j] == sv[i]:
+            j += 1
+        t = j - i
+        if t > 1:
+            tie_sum += t**3 - t
+        i = j
+
+    var_u = (n1 * n2 / 12.0) * ((n1 + n2 + 1) - tie_sum / max((n1 + n2) * (n1 + n2 - 1), 1))
+    if var_u <= 0:
+        return float(u), 1.0
+
+    # Continuity correction toward the mean
+    if u < mu:
+        z = (u - mu + 0.5) / math.sqrt(var_u)
+    elif u > mu:
+        z = (u - mu - 0.5) / math.sqrt(var_u)
+    else:
+        z = 0.0
+
+    p_two = 2.0 * (1.0 - _norm_cdf(abs(z)))
+    return float(u), float(min(max(p_two, 0.0), 1.0))
+
+
+def welch_t_test(sample1, sample2):
+    """
+    Compute Welch's t-test statistic for two independent samples.
+    Returns (t_stat, df). We do not compute an exact p-value here,
+    but t_stat and df are enough for interpretation / external tools.
+    """
+    x1 = np.array(sample1, dtype=float)
+    x2 = np.array(sample2, dtype=float)
+    n1, n2 = len(x1), len(x2)
+    if n1 < 2 or n2 < 2:
+        return (0.0, 0.0)
+
+    m1, m2 = np.mean(x1), np.mean(x2)
+    s1_sq = np.var(x1, ddof=1)
+    s2_sq = np.var(x2, ddof=1)
+
+    numerator = m1 - m2
+    denom = math.sqrt(s1_sq / n1 + s2_sq / n2)
+    if denom == 0:
+        return (0.0, 0.0)
+
+    t_stat = numerator / denom
+    # Welch–Satterthwaite approximation for df
+    df_num = (s1_sq / n1 + s2_sq / n2) ** 2
+    df_den = (s1_sq**2 / (n1**2 * (n1 - 1))) + (s2_sq**2 / (n2**2 * (n2 - 1)))
+    df = df_num / df_den if df_den > 0 else 0.0
+    return (float(t_stat), float(df))
+
+
+def welch_t_pvalue_two_sided(sample1, sample2):
+    """
+    Two-sided p-value for Welch's t-test (unequal variances).
+    Uses scipy.stats.t.sf if SciPy is installed; otherwise a normal approximation
+    (document as approximate when df is small).
+    Returns (p_value, t_stat, df_welch).
+    """
+    x1 = np.array(sample1, dtype=float)
+    x2 = np.array(sample2, dtype=float)
+    n1, n2 = len(x1), len(x2)
+    if n1 < 2 or n2 < 2:
+        return float("nan"), float("nan"), float("nan")
+    t_stat, df = welch_t_test(sample1, sample2)
+    if df <= 0 or not math.isfinite(t_stat):
+        return float("nan"), t_stat, df
+    try:
+        from scipy.stats import t as student_t  # type: ignore
+
+        p = 2.0 * student_t.sf(abs(t_stat), df)
+        return float(min(max(p, 0.0), 1.0)), t_stat, df
+    except ImportError:
+        p = 2.0 * (1.0 - _norm_cdf(abs(t_stat)))
+        return float(min(max(p, 0.0), 1.0)), t_stat, df
+
+
 def check_outliers(values, threshold=2.0):
     """
     Check for outliers using z-score method
@@ -170,7 +356,8 @@ def analyze_runs(run_files, metric_name, extract_func, file_data_map=None):
         'n': n,
         'outliers': outliers,
         'files': file_data,
-        'latex': format_latex(mean, std)
+        'latex': format_latex(mean, std),
+        'ci_95': t_confidence_interval(mean, std, n),
     }
 
 def extract_metrics_from_json(data):
@@ -310,6 +497,9 @@ def process_test_configuration(config_name, json_files, csv_files, metrics_files
         print(f"  Mean: {result['mean']:.2f}")
         print(f"  Std Dev: {result['std']:.2f}")
         print(f"  LaTeX: {result['latex']}")
+        if result.get("ci_95"):
+            lo, hi = result["ci_95"]
+            print(f"  95% CI (t): [{lo:.2f}, {hi:.2f}]")
         
         if result['outliers']:
             print(f"  ⚠️  WARNING: Outliers detected at indices {result['outliers']}")
@@ -352,7 +542,7 @@ def generate_latex_table(all_results):
     # Generate table
     print("\\begin{table}[h]")
     print("\\centering")
-    print("\\caption{Performance Results (Mean $\\pm$ SD over 3 runs)}")
+    print("\\caption{Performance Results (Mean $\\pm$ SD over repeated runs)}")
     print("\\label{tab:results}")
     print("\\begin{tabular}{lccccc}")
     print("\\hline")
@@ -374,6 +564,105 @@ def generate_latex_table(all_results):
     print("\\end{tabular}")
     print("\\end{table}\n")
 
+
+def generate_ablation_latex_table(ablation_results):
+    """LaTeX table for ablation study (one load level, multiple variants)."""
+    print(f"\n{'='*80}")
+    print("ABLATION STUDY — LaTeX TABLE")
+    print(f"{'='*80}\n")
+
+    order = [
+        "Ablation Baseline",
+        "Ablation IndexOnly",
+        "Ablation CacheOnly",
+        "Ablation QueryOpt",
+    ]
+    print("\\begin{table}[h]")
+    print("\\centering")
+    print("\\caption{Ablation Study (Mean $\\pm$ SD over repeated runs)}")
+    print("\\label{tab:ablation}")
+    print("\\begin{tabular}{lccccc}")
+    print("\\hline")
+    print(
+        "Configuration & Avg(ms) & P95(ms) & Throughput(req/s) & Cache hit(\\%) & n \\\\"
+    )
+    print("\\hline")
+    for name in order:
+        if name not in ablation_results:
+            continue
+        results = ablation_results[name]
+        avg = results.get("avg_latency", {}).get("latex", "N/A")
+        p95 = results.get("p95_latency", {}).get("latex", "N/A")
+        thr = results.get("throughput", {}).get("latex", "N/A")
+        cache = results.get("cache_hit", {}).get("latex", "N/A")
+        n = results.get("avg_latency", {}).get("n", "")
+        short = name.replace("Ablation ", "")
+        print(f"{short} & {avg} & {p95} & {thr} & {cache} & {n} \\\\")
+    print("\\hline")
+    print("\\end{tabular}")
+    print("\\end{table}\n")
+
+
+def compare_baseline_gemini(all_results):
+    """Welch t-test and two-sided Mann–Whitney U between Baseline and Gemini per load."""
+    print(f"\n{'='*80}")
+    print("Baseline vs. Gemini: Welch t-test and Mann–Whitney U (two-sided p), per load")
+    print(f"{'='*80}\n")
+
+    # Group by load similarly to generate_latex_table
+    by_load = defaultdict(dict)
+    for config_name, results in all_results.items():
+        parts = config_name.split()
+        if len(parts) >= 2:
+            system = parts[0]
+            load = int(parts[1])
+            by_load[load][system] = results
+
+    metrics_keys = [
+        ('avg_latency', 'Avg Latency (ms)'),
+        ('p95_latency', 'P95 Latency (ms)'),
+        ('throughput', 'Throughput (req/s)'),
+        ('cache_hit', 'Cache Hit Ratio (%)'),
+    ]
+
+    for load in sorted(by_load.keys()):
+        if 'Baseline' not in by_load[load] or 'Gemini' not in by_load[load]:
+            continue
+
+        print(f"\nLoad {load} users")
+        print("-" * 40)
+
+        base = by_load[load]['Baseline']
+        gem = by_load[load]['Gemini']
+
+        for key, label in metrics_keys:
+            b_res = base.get(key)
+            g_res = gem.get(key)
+            if not b_res or not g_res:
+                continue
+
+            b_vals = b_res.get('values', [])
+            g_vals = g_res.get('values', [])
+            if len(b_vals) < 2 or len(g_vals) < 2:
+                continue
+
+            t_stat, df = welch_t_test(b_vals, g_vals)
+            p_welch, _, _ = welch_t_pvalue_two_sided(b_vals, g_vals)
+            u_stat, p_mw = mann_whitney_u_two_sided(b_vals, g_vals)
+            sig = ""
+            if not math.isnan(p_mw):
+                if p_mw < 0.001:
+                    sig = " ***"
+                elif p_mw < 0.01:
+                    sig = " **"
+                elif p_mw < 0.05:
+                    sig = " *"
+            pw = f"{p_welch:.4g}" if not math.isnan(p_welch) else "n/a"
+            print(
+                f"{label}: Welch t = {t_stat:.3f} (df ≈ {df:.1f}, p = {pw}); "
+                f"Mann–Whitney U = {u_stat:.1f}, p = {p_mw:.4g}{sig}"
+            )
+
 def main():
     """Main function"""
     if len(sys.argv) < 2:
@@ -383,23 +672,23 @@ def main():
         print("  python3 compute-statistics.py gemini_150")
         print("\nOr process all configurations:")
         print("  python3 compute-statistics.py all")
+        print("  python3 compute-statistics.py ablation")
         sys.exit(1)
     
     config_arg = sys.argv[1]
     project_root = Path(__file__).parent.parent
+
+    # Loads used by run-benchmark-grid.sh (and manual runs)
+    GRID_LOADS = ["50", "100", "150", "200", "250", "300"]
     
     if config_arg == 'all':
         # Process all configurations
         all_results = {}
         
-        configs = [
-            ('Baseline 50', 'baseline', '50'),
-            ('Baseline 150', 'baseline', '150'),
-            ('Baseline 250', 'baseline', '250'),
-            ('Gemini 50', 'gemini', '50'),
-            ('Gemini 150', 'gemini', '150'),
-            ('Gemini 250', 'gemini', '250'),
-        ]
+        configs = []
+        for load in GRID_LOADS:
+            configs.append((f"Baseline {load}", "baseline", load))
+            configs.append((f"Gemini {load}", "gemini", load))
         
         for config_name, folder, load in configs:
             # Look for JSON files (with or without _run suffix)
@@ -411,25 +700,9 @@ def main():
             csv_pattern2 = f"results/{folder}/locust_{load}_run*.csv"  # Run-numbered
             csv_pattern3 = f"results/{folder}/{load}_run*_stats.csv"  # Stats files from runs
             
-            # Look for timestamped metrics CSV files and filter by estimated load
-            all_metrics_files = list(project_root.glob(f"results/{folder}/metrics-*.csv"))
+            # Do not bucket timestamped metrics-*.csv by latency — filenames lack load;
+            # mis-assigns 100/200/300. Use JSON + Locust only for grid statistics.
             metrics_files = []
-            
-            # Filter metrics files by estimated load level based on avg latency
-            load_thresholds = {
-                '50': (0, 600),      # 0-600ms avg = load 50
-                '150': (600, 2000),  # 600-2000ms avg = load 150
-                '250': (2000, 999999) # 2000ms+ avg = load 250
-            }
-            
-            min_avg, max_avg = load_thresholds.get(load, (0, 999999))
-            
-            for mfile in all_metrics_files:
-                data = load_metrics_csv(str(mfile))
-                if data:
-                    avg = data.get('avg_ms', 0)
-                    if min_avg <= avg < max_avg and avg > 0:  # Valid non-zero metrics
-                        metrics_files.append(mfile)
             
             json_files = list(project_root.glob(json_pattern1)) + list(project_root.glob(json_pattern2))
             csv_files = (list(project_root.glob(csv_pattern1)) + 
@@ -442,6 +715,40 @@ def main():
         
         # Generate LaTeX table
         generate_latex_table(all_results)
+        # Also print simple Welch t statistics for Baseline vs Gemini
+        compare_baseline_gemini(all_results)
+
+    elif config_arg == "ablation":
+        ablation_results = {}
+        load = os.environ.get("ABLATION_LOAD", "150")
+        ablation_configs = [
+            ("Ablation Baseline", f"ablation/baseline", load),
+            ("Ablation IndexOnly", f"ablation/index_only", load),
+            ("Ablation CacheOnly", f"ablation/cache_only", load),
+            ("Ablation QueryOpt", f"ablation/query_opt_only", load),
+        ]
+        for config_name, rel_folder, ld in ablation_configs:
+            base = project_root / "results" / rel_folder
+            json_files = sorted(
+                set(list(base.glob(f"{ld}.json")) + list(base.glob(f"{ld}_run*.json")))
+            )
+            csv_files = sorted(
+                set(
+                    list(base.glob(f"locust_{ld}.csv"))
+                    + list(base.glob(f"locust_{ld}_run*.csv"))
+                    + list(base.glob(f"{ld}_run*_stats.csv"))
+                )
+            )
+            metrics_files = []
+            if json_files or csv_files:
+                results = process_test_configuration(
+                    config_name, json_files, csv_files, metrics_files
+                )
+                ablation_results[config_name] = results
+            else:
+                print(f"Note: no data yet for {config_name} under results/{rel_folder}/")
+        if ablation_results:
+            generate_ablation_latex_table(ablation_results)
         
     else:
         # Process single configuration
@@ -459,24 +766,8 @@ def main():
         csv_pattern2 = f"results/{folder}/locust_{load}_run*.csv"
         csv_pattern3 = f"results/{folder}/{load}_run*_stats.csv"
         
-        # Also look for timestamped metrics CSV files
-        all_metrics_files = list(project_root.glob(f"results/{folder}/metrics-*.csv"))
+        # Avoid ambiguous metrics-*.csv bucketing for arbitrary loads
         metrics_files = []
-        
-        # Filter metrics files by estimated load level
-        load_thresholds = {
-            '50': (0, 600),
-            '150': (600, 2000),
-            '250': (2000, 999999)
-        }
-        min_avg, max_avg = load_thresholds.get(load, (0, 999999))
-        
-        for mfile in all_metrics_files:
-            data = load_metrics_csv(str(mfile))
-            if data:
-                avg = data.get('avg_ms', 0)
-                if min_avg <= avg < max_avg and avg > 0:
-                    metrics_files.append(mfile)
         
         json_files = list(project_root.glob(json_pattern1)) + list(project_root.glob(json_pattern2))
         csv_files = (list(project_root.glob(csv_pattern1)) + 
@@ -485,7 +776,10 @@ def main():
         
         if not json_files and not csv_files and not metrics_files:
             print(f"Error: No files found for {config_arg}")
-            print(f"  Looked for: {json_pattern}, {csv_pattern}, metrics-*.csv")
+            print(
+                f"  Looked for: {json_pattern1}, {json_pattern2}, "
+                f"{csv_pattern1}, {csv_pattern2}, {csv_pattern3}"
+            )
             sys.exit(1)
         
         config_name = f"{folder.capitalize()} {load}"
