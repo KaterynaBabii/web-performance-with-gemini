@@ -1,0 +1,58 @@
+{
+  "run_id": "b40f6f86-673f-4c40-a352-9c33e90680d6",
+  "model_id": "gemini-dry-run",
+  "prompt_version": "llm_comparison_v1",
+  "diagnostics_bundle_id": "baseline_v1",
+  "temperature": 0.2,
+  "max_tokens": 4096,
+  "timestamp_utc": "2025-03-24T12:00:00Z",
+  "raw_text": "dry-run synthetic",
+  "recommendations": [
+    {
+      "id": "R1",
+      "title": "Add GIN / trigram index for product search",
+      "detail": "ILIKE on name/description; use pg_trgm GIN or FTS.",
+      "primary_category": "indexing",
+      "evidence_citations": [
+        "code:products",
+        "bundle:search"
+      ],
+      "targets": {
+        "tables": [
+          "products"
+        ],
+        "routes": [
+          "/products"
+        ]
+      }
+    },
+    {
+      "id": "R2",
+      "title": "Batch dashboard order_items",
+      "detail": "Replace N+1 with one JOIN or batched IN query.",
+      "primary_category": "query_rewrite",
+      "evidence_citations": [
+        "code:dashboard"
+      ],
+      "targets": {
+        "routes": [
+          "/users/:id/dashboard"
+        ]
+      }
+    },
+    {
+      "id": "R3",
+      "title": "Redis cache for recommendations",
+      "detail": "Cache aggregate recommendation query with TTL.",
+      "primary_category": "caching",
+      "evidence_citations": [
+        "code:recommendations"
+      ],
+      "targets": {
+        "routes": [
+          "/recommendations/:userId"
+        ]
+      }
+    }
+  ]
+}

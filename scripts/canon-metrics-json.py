@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Merge canonical IEEE paper metric keys into a per-run JSON from /metrics + Locust.
+Merge canonical paper metric keys into a per-run JSON from /metrics + Locust.
 
 Writes (and preserves existing fields):
   avg_latency_ms, p95_latency_ms, throughput_rps, cache_hit_pct

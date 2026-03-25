@@ -1,6 +1,5 @@
 """
 Locust load testing configuration for Web Gemini Performance Testbed
-IEEE Access Research - Load Testing Script
 """
 
 from locust import HttpUser, task, between

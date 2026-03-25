@@ -1,0 +1,49 @@
+{
+  "run_id": "510f7c3a-2b04-4aff-9224-f6f3a823aeed",
+  "model_id": "gpt-dry-run",
+  "prompt_version": "llm_comparison_v1",
+  "diagnostics_bundle_id": "baseline_v1",
+  "temperature": 0.2,
+  "max_tokens": 4096,
+  "timestamp_utc": "2025-03-24T12:00:00Z",
+  "raw_text": "dry-run synthetic",
+  "recommendations": [
+    {
+      "id": "R1",
+      "title": "Trigram GIN on products for ILIKE",
+      "detail": "Same family as G1; wording variant.",
+      "primary_category": "indexing",
+      "evidence_citations": [
+        "code:products"
+      ],
+      "targets": {
+        "tables": [
+          "products"
+        ]
+      }
+    },
+    {
+      "id": "R2",
+      "title": "Single-query dashboard with JOINs",
+      "detail": "Collapse per-order loops into one round-trip.",
+      "primary_category": "query_rewrite",
+      "evidence_citations": [
+        "code:dashboard"
+      ]
+    },
+    {
+      "id": "R4",
+      "title": "Wrap checkout in a transaction",
+      "detail": "BEGIN/COMMIT around order + order_items inserts.",
+      "primary_category": "transaction_handling",
+      "evidence_citations": [
+        "code:checkout"
+      ],
+      "targets": {
+        "routes": [
+          "/checkout"
+        ]
+      }
+    }
+  ]
+}

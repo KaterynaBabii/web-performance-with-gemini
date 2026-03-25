@@ -1,10 +1,10 @@
 # Web Gemini Performance Testbed
 
-IEEE Access Research Testbed for Gemini-Assisted Performance Engineering
+**This will run 10 tests** per user level: **10** independent Locust runs (`run1` … `run10`) at **50, 100, 150, 200, 250,** and **300** concurrent users. By default `./scripts/run-benchmark-grid.sh` exercises **both** baseline and optimized stacks (override with `BENCHMARK_GRID_SYSTEMS`). Step-by-step: [Testing Workflow](#testing-workflow).
 
 ## Overview
 
-This testbed demonstrates the application of Gemini AI for performance engineering assistance in a Node.js web application. The project includes two versions:
+This testbed applies Gemini-assisted performance ideas to a Node.js web application. The primary benchmark is that **grid** (six user levels × 10 runs each, per stack); optional legacy scripts only run **50, 150,** and **250** users once each. Two application configurations:
 
 - **Baseline Version**: Intentionally includes common performance anti-patterns (slow queries, N+1 problems, no caching)
 - **Optimized Version**: Implements Gemini-informed improvements (indexes, query rewrites, Redis caching)
@@ -50,6 +50,7 @@ web-gemini/
 │   ├── baseline/
 │   └── gemini/
 └── scripts/
+    ├── run-benchmark-grid.sh
     ├── seed.js
     ├── run-baseline.sh
     └── run-optimized.sh
@@ -229,7 +230,7 @@ See `CHANGES.md` for detailed documentation of:
 - Gemini's analysis of performance issues
 - Specific recommendations provided
 - Implementation details
-- Expected performance improvements
+ - Measured performance outcomes tied to those recommendations
 
 ## Example Prompts
 
@@ -240,18 +241,7 @@ The `prompts/` directory contains example prompts used to generate recommendatio
 
 ## Results
 
-Expected performance improvements (from baseline to optimized):
-
-| Metric | Baseline | Optimized | Improvement |
-|--------|----------|-----------|-------------|
-| Avg Latency | ~180ms | ~25ms | 86% ↓ |
-| P95 Latency | ~450ms | ~80ms | 82% ↓ |
-| Throughput | ~55 req/s | ~380 req/s | 590% ↑ |
-| Avg DB Query Time | ~120ms | ~18ms | 85% ↓ |
-| Cache Hit Ratio | 0% | ~85% | N/A |
-
-*Actual results will vary based on hardware and load test configuration*
-
+Report **measured** results generated from the benchmark grid and stored under `results/`.
 ## Testing Workflow
 
 Complete step-by-step guide for running all performance tests.
@@ -267,53 +257,56 @@ docker compose up -d
 npm run seed
 ```
 
-### Phase 2: Baseline Tests (Version A)
+### Phase 2: Full benchmark grid (recommended)
+
+Prerequisites: Docker stack up, database seeded, Locust installed (`pip install -r requirements.txt` in `loadtest/` if needed).
 
 ```bash
-# 1. Apply baseline database (drop indexes)
+# Runs baseline and optimized arms by default (tears down/recreates stack per condition).
+./scripts/run-benchmark-grid.sh
+```
+
+This will run **10 tests** (10 Locust repetitions, `run1` … `run10`) **per user level**:
+
+- **50** concurrent users  
+- **100** concurrent users  
+- **150** concurrent users  
+- **200** concurrent users  
+- **250** concurrent users  
+- **300** concurrent users  
+
+Each run uses a **3-minute** steady-state window (see script for spawn rates). Set `BENCHMARK_GRID_SYSTEMS=baseline` or `gemini` to run one arm only; set `BENCHMARK_GRID_REPS` to change the repetition count (default **10**).
+
+Results are saved under:
+
+- `results/baseline/<users>_run<1-10>.json` and `results/baseline/locust_<users>_run<k>.csv`
+- `results/gemini/<users>_run<1-10>.json` and `results/gemini/locust_<users>_run<k>.csv`
+
+### Phase 2b: Quick three-run scripts (optional)
+
+Single Locust run each at **50, 150, and 250** users only—useful for smoke tests, **not** a substitute for the grid above.
+
+**Baseline**
+
+```bash
 ./scripts/apply-baseline-db.sh
-
-# 2. Ensure baseline mode in docker-compose.yml
-# (ENABLE_REDIS_CACHE=0, ENABLE_BATCH_DASHBOARD=0, ENABLE_OPT_SEARCH=0)
+# Baseline flags in docker-compose: ENABLE_REDIS_CACHE=0, ENABLE_BATCH_DASHBOARD=0, ENABLE_OPT_SEARCH=0
 docker compose up -d --build
-
-# 3. Run all baseline load tests (A1, A2, A3)
 ./scripts/run-baseline-load-tests.sh
 ```
 
-This will run three tests:
-- **A1**: 50 users, 3 minutes
-- **A2**: 150 users, 3 minutes
-- **A3**: 250 users, 3 minutes
-
-Results are saved to:
-- `results/baseline/50.json`, `150.json`, `250.json`
-- `results/baseline/locust_50.csv`, `locust_150.csv`, `locust_250.csv`
-
-### Phase 3: Gemini-Optimized Tests (Version B)
+**Gemini-optimized**
 
 ```bash
-# 1. Apply optimized database (add indexes)
 ./scripts/apply-optimized-db.sh
-
-# 2. Ensure optimized mode in docker-compose.yml
-# (ENABLE_REDIS_CACHE=1, ENABLE_BATCH_DASHBOARD=1, ENABLE_OPT_SEARCH=1)
+# Optimized flags: ENABLE_REDIS_CACHE=1, ENABLE_BATCH_DASHBOARD=1, ENABLE_OPT_SEARCH=1
 docker compose up -d --build
-
-# 3. Run all optimized load tests (B1, B2, B3)
 ./scripts/run-optimized-load-tests.sh
 ```
 
-This will run three tests:
-- **B1**: 50 users, 3 minutes
-- **B2**: 150 users, 3 minutes
-- **B3**: 250 users, 3 minutes
+Outputs: `results/baseline|gemini/{50,150,250}.json` and matching `locust_*.csv` (no `_run{k}` suffix).
 
-Results are saved to:
-- `results/gemini/50.json`, `150.json`, `250.json`
-- `results/gemini/locust_50.csv`, `locust_150.csv`, `locust_250.csv`
-
-### Phase 4: Generate Results Table
+### Phase 3: Generate Results Table
 
 ```bash
 # Create final results table
@@ -331,11 +324,10 @@ The results table will show:
 - Throughput(req/s) - Requests per second
 - Cache hit(%) - Cache hit ratio
 
-### Optional: Individual Test Runs
+### Optional: Other scripts
 
-If you need to run tests individually, see the scripts in `scripts/` directory:
-- `run-baseline-load-tests.sh` - Automated baseline tests
-- `run-optimized-load-tests.sh` - Automated optimized tests
+- `run-benchmark-grid.sh` — full statistical grid (10 runs × six user levels; see Phase 2)
+- `run-baseline-load-tests.sh` / `run-optimized-load-tests.sh` — quick three-load smoke runs (Phase 2b)
 - `apply-baseline-db.sh` - Reset to baseline database state
 - `apply-optimized-db.sh` - Apply optimized indexes
 - `create-results-table.py` - Generate results table

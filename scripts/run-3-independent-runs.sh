@@ -1,5 +1,5 @@
 #!/bin/bash
-# Run 3 independent test suites for IEEE Access paper statistics
+# Run 3 independent test suites for benchmark statistics
 
 set -e
 
@@ -10,7 +10,7 @@ cd "$PROJECT_ROOT"
 
 echo "=========================================="
 echo "RUNNING 3 INDEPENDENT TEST SUITES"
-echo "For IEEE Access Paper Statistics"
+echo "For benchmark statistics"
 echo "=========================================="
 echo ""
 echo "This will take approximately 90 minutes (30 min × 3 runs)"

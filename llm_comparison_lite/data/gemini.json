@@ -1,0 +1,42 @@
+[
+  {
+    "endpoint": "GET /products",
+    "raw_text": "Add GIN or trigram index on products.name and description for ILIKE search.",
+    "category": "indexing",
+    "accepted_by_human": true,
+    "invalid_or_hallucinated": false,
+    "safety_risk": "low"
+  },
+  {
+    "endpoint": "GET /users/:id/dashboard",
+    "raw_text": "Replace per-order queries with a single JOIN loading order_items.",
+    "category": "query_rewrite",
+    "accepted_by_human": true,
+    "invalid_or_hallucinated": false,
+    "safety_risk": "low"
+  },
+  {
+    "endpoint": "GET /recommendations/:userId",
+    "raw_text": "Cache recommendation aggregates in Redis with a 60s TTL.",
+    "category": "caching",
+    "accepted_by_human": true,
+    "invalid_or_hallucinated": false,
+    "safety_risk": "medium"
+  },
+  {
+    "endpoint": "POST /checkout",
+    "raw_text": "Wrap order and line inserts in a single transaction.",
+    "category": "transaction_handling",
+    "accepted_by_human": false,
+    "invalid_or_hallucinated": false,
+    "safety_risk": "low"
+  },
+  {
+    "endpoint": "GET /products",
+    "raw_text": "Create index on nonexistent column products.search_vector without migration.",
+    "category": "invalid_unsafe",
+    "accepted_by_human": false,
+    "invalid_or_hallucinated": true,
+    "safety_risk": "high"
+  }
+]

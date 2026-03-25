@@ -1,12 +1,12 @@
 # Quick Start - Testing Checklist
 
-## ✅ Pre-flight Check
+## Pre-flight Check
 
 - [ ] Docker and Docker Compose installed
 - [ ] Node.js 18+ installed  
 - [ ] Python 3.8+ with `pip install locust`
 
-## 🚀 Execution Steps
+## Execution Steps
 
 ### 1. Build and Start Services
 ```bash
@@ -41,7 +41,7 @@ curl -X POST http://localhost:3000/metrics/export
 docker exec -i web-gemini-postgres psql -U postgres -d web_gemini < db/indexes_optimized.sql
 ```
 
-### 5. Verify Code Changes (Already Implemented ✅)
+### 5. Verify Code Changes (Already Implemented)
 
 - ✅ **Dashboard Batch Query**: `server/src/routes/dashboard.js` - Single query with JOINs
 - ✅ **Recommendations Redis Cache**: `server/src/routes/recommendations.js` - Redis with 5min TTL
@@ -72,17 +72,7 @@ curl -X POST http://localhost:3000/metrics/export
 cat results/comparison-table.txt
 ```
 
-## 📊 Expected Results
-
-| Metric | Baseline | Optimized | Improvement |
-|--------|----------|-----------|-------------|
-| Avg Latency | ~180ms | ~25ms | 86% ↓ |
-| P95 Latency | ~450ms | ~80ms | 82% ↓ |
-| Throughput | ~55 req/s | ~380 req/s | 590% ↑ |
-| Avg DB Query Time | ~120ms | ~18ms | 85% ↓ |
-| Cache Hit Ratio | 0% | ~85% | N/A |
-
-## 🔍 Verification Commands
+## Verification Commands
 
 ```bash
 # Check services
@@ -98,9 +88,8 @@ curl http://localhost:3000/health
 curl http://localhost:3000/metrics | jq '.'
 ```
 
-## 📁 Results Location
+## Results Location
 
 - Baseline: `results/baseline/metrics-*.csv`
 - Optimized: `results/gemini/metrics-*.csv`
 - Comparison: `results/comparison-table.txt`
-

@@ -1,5 +1,5 @@
 #!/bin/bash
-# Run complete test suite 3 times for IEEE Access paper statistics
+# Run complete test suite 3 times for benchmark statistics
 # This ensures all configurations have 3 independent runs
 
 set -e
@@ -11,7 +11,7 @@ cd "$PROJECT_ROOT"
 
 echo "=========================================="
 echo "RUNNING 3 COMPLETE TEST SUITES"
-echo "For IEEE Access Paper (Mean ± SD)"
+echo "For benchmark statistics (Mean ± SD)"
 echo "=========================================="
 echo ""
 echo "This will take approximately 90 minutes (30 min × 3 runs)"

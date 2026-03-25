@@ -1,6 +1,5 @@
 #!/bin/bash
 # Query pg_stat_statements for performance analysis
-# Useful for IEEE Access reviewers
 
 echo "=== Top 10 Slowest Queries (by total execution time) ==="
 docker exec -i web-gemini-postgres psql -U postgres -d web_gemini -c "

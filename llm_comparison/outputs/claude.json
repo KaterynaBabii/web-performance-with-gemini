@@ -1,0 +1,34 @@
+{
+  "run_id": "af1ecccc-505f-4ee9-bebc-a2960ec9b133",
+  "model_id": "claude-dry-run",
+  "prompt_version": "llm_comparison_v1",
+  "diagnostics_bundle_id": "baseline_v1",
+  "temperature": 0.2,
+  "max_tokens": 4096,
+  "timestamp_utc": "2025-03-24T12:00:00Z",
+  "raw_text": "dry-run synthetic",
+  "recommendations": [
+    {
+      "id": "R1",
+      "title": "Full-text or trigram index for search",
+      "detail": "Avoid sequential scan on ILIKE.",
+      "primary_category": "indexing",
+      "evidence_citations": [
+        "bundle:search"
+      ]
+    },
+    {
+      "id": "R2",
+      "title": "Batched items load for dashboard",
+      "detail": "Reduce round-trips for order_items.",
+      "primary_category": "query_rewrite"
+    },
+    {
+      "id": "R5",
+      "title": "Connection pool sizing under load",
+      "detail": "Tune pool vs. DB max_connections from Locust saturation.",
+      "primary_category": "bottleneck_diagnosis",
+      "risk_notes": "Verify with pool metrics, not guesswork."
+    }
+  ]
+}

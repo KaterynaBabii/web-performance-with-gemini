@@ -1,0 +1,164 @@
+{
+  "gold_id": "gold-dry-run-demo",
+  "bundle_id": "baseline_v1",
+  "items": [
+    {
+      "id": "G1",
+      "canonical_key": "gin_fts_products",
+      "primary_category": "indexing",
+      "description": "Index product search path (GIN/trigram/FTS)"
+    },
+    {
+      "id": "G2",
+      "canonical_key": "dashboard_n1_elimination",
+      "primary_category": "query_rewrite",
+      "description": "Remove N+1 on dashboard"
+    },
+    {
+      "id": "G3",
+      "canonical_key": "recommendations_cache_ttl",
+      "primary_category": "caching",
+      "description": "Cache recommendations with TTL"
+    },
+    {
+      "id": "G4",
+      "canonical_key": "checkout_transaction",
+      "primary_category": "transaction_handling",
+      "description": "Atomic checkout (transaction)"
+    },
+    {
+      "id": "G5",
+      "canonical_key": "pool_saturation",
+      "primary_category": "bottleneck_diagnosis",
+      "description": "Diagnose pool/connection saturation"
+    }
+  ],
+  "model_item_labels": [
+    {
+      "model_run_id": "b40f6f86-673f-4c40-a352-9c33e90680d6",
+      "item_id": "R1",
+      "maps_to_gold_id": "G1",
+      "match_type": "full",
+      "invalid_unsafe": false,
+      "quality": {
+        "correctness": 5,
+        "actionability": 5,
+        "novelty": 4,
+        "safety": 5,
+        "effort": 4
+      }
+    },
+    {
+      "model_run_id": "b40f6f86-673f-4c40-a352-9c33e90680d6",
+      "item_id": "R2",
+      "maps_to_gold_id": "G2",
+      "match_type": "full",
+      "invalid_unsafe": false,
+      "quality": {
+        "correctness": 4,
+        "actionability": 4,
+        "novelty": 3,
+        "safety": 5,
+        "effort": 4
+      }
+    },
+    {
+      "model_run_id": "b40f6f86-673f-4c40-a352-9c33e90680d6",
+      "item_id": "R3",
+      "maps_to_gold_id": "G3",
+      "match_type": "full",
+      "invalid_unsafe": false,
+      "quality": {
+        "correctness": 5,
+        "actionability": 4,
+        "novelty": 4,
+        "safety": 4,
+        "effort": 3
+      }
+    },
+    {
+      "model_run_id": "510f7c3a-2b04-4aff-9224-f6f3a823aeed",
+      "item_id": "R1",
+      "maps_to_gold_id": "G1",
+      "match_type": "full",
+      "invalid_unsafe": false,
+      "quality": {
+        "correctness": 5,
+        "actionability": 5,
+        "novelty": 3,
+        "safety": 5,
+        "effort": 4
+      }
+    },
+    {
+      "model_run_id": "510f7c3a-2b04-4aff-9224-f6f3a823aeed",
+      "item_id": "R2",
+      "maps_to_gold_id": "G2",
+      "match_type": "full",
+      "invalid_unsafe": false,
+      "quality": {
+        "correctness": 4,
+        "actionability": 4,
+        "novelty": 3,
+        "safety": 5,
+        "effort": 4
+      }
+    },
+    {
+      "model_run_id": "510f7c3a-2b04-4aff-9224-f6f3a823aeed",
+      "item_id": "R4",
+      "maps_to_gold_id": "G4",
+      "match_type": "full",
+      "invalid_unsafe": false,
+      "quality": {
+        "correctness": 5,
+        "actionability": 5,
+        "novelty": 3,
+        "safety": 5,
+        "effort": 3
+      }
+    },
+    {
+      "model_run_id": "af1ecccc-505f-4ee9-bebc-a2960ec9b133",
+      "item_id": "R1",
+      "maps_to_gold_id": "G1",
+      "match_type": "full",
+      "invalid_unsafe": false,
+      "quality": {
+        "correctness": 5,
+        "actionability": 4,
+        "novelty": 3,
+        "safety": 5,
+        "effort": 4
+      }
+    },
+    {
+      "model_run_id": "af1ecccc-505f-4ee9-bebc-a2960ec9b133",
+      "item_id": "R2",
+      "maps_to_gold_id": "G2",
+      "match_type": "full",
+      "invalid_unsafe": false,
+      "quality": {
+        "correctness": 4,
+        "actionability": 4,
+        "novelty": 3,
+        "safety": 5,
+        "effort": 4
+      }
+    },
+    {
+      "model_run_id": "af1ecccc-505f-4ee9-bebc-a2960ec9b133",
+      "item_id": "R5",
+      "maps_to_gold_id": "G5",
+      "match_type": "full",
+      "invalid_unsafe": false,
+      "quality": {
+        "correctness": 4,
+        "actionability": 3,
+        "novelty": 4,
+        "safety": 5,
+        "effort": 3
+      }
+    }
+  ]
+}

@@ -1,0 +1,42 @@
+[
+  {
+    "endpoint": "GET /products",
+    "raw_text": "Use pg_trgm GIN index to accelerate ILIKE patterns on name/description.",
+    "category": "indexing",
+    "accepted_by_human": true,
+    "invalid_or_hallucinated": false,
+    "safety_risk": "low"
+  },
+  {
+    "endpoint": "GET /users/:id/dashboard",
+    "raw_text": "Batch-load order_items using WHERE order_id = ANY($1::bigint[]).",
+    "category": "batching",
+    "accepted_by_human": true,
+    "invalid_or_hallucinated": false,
+    "safety_risk": "low"
+  },
+  {
+    "endpoint": "GET /recommendations/:userId",
+    "raw_text": "Add Redis cache; invalidate on order write.",
+    "category": "redis",
+    "accepted_by_human": true,
+    "invalid_or_hallucinated": false,
+    "safety_risk": "medium"
+  },
+  {
+    "endpoint": "POST /checkout",
+    "raw_text": "Use BEGIN/COMMIT and row-level locking on inventory if added later.",
+    "category": "transaction",
+    "accepted_by_human": true,
+    "invalid_or_hallucinated": false,
+    "safety_risk": "low"
+  },
+  {
+    "endpoint": "GET /metrics",
+    "raw_text": "Tune Node cluster to 64 workers on a 2 vCPU container.",
+    "category": "bottleneck",
+    "accepted_by_human": false,
+    "invalid_or_hallucinated": false,
+    "safety_risk": "medium"
+  }
+]

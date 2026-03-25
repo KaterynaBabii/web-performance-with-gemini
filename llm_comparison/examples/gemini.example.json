@@ -1,0 +1,31 @@
+{
+  "run_id": "example-gemini-001",
+  "model_id": "gemini-2.0-flash",
+  "prompt_version": "llm_comparison_v1",
+  "diagnostics_bundle_id": "bundle_v1",
+  "temperature": 0.1,
+  "max_tokens": 4096,
+  "timestamp_utc": "2026-03-24T12:00:00Z",
+  "raw_text": "Condensed reasoning omitted in example.",
+  "recommendations": [
+    {
+      "id": "R1",
+      "title": "GIN index for product search FTS",
+      "detail": "Replace sequential scan on ILIKE with to_tsvector + GIN for name/description.",
+      "primary_category": "indexing",
+      "evidence_citations": ["explain:search", "pgss:products_search"],
+      "sql_snippets": [
+        "CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_products_fts ON products USING gin(to_tsvector('english', coalesce(name,'') || ' ' || coalesce(description,'')))"
+      ],
+      "targets": { "tables": ["products"], "routes": ["/products"] }
+    },
+    {
+      "id": "R2",
+      "title": "Batch or join dashboard queries",
+      "detail": "Eliminate N+1 by loading related rows in one query or batched IN list.",
+      "primary_category": "query_rewrite",
+      "evidence_citations": ["code:dashboard", "explain:dashboard"],
+      "targets": { "routes": ["/users/:id/dashboard"] }
+    }
+  ]
+}

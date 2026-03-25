@@ -8,9 +8,8 @@ This guide provides comprehensive instructions for running performance tests com
 2. [Quick Start (Automated)](#quick-start-automated)
 3. [Manual Testing Workflow](#manual-testing-workflow)
 4. [Understanding Test Configurations](#understanding-test-configurations)
-5. [Expected Results](#expected-results)
-6. [Troubleshooting](#troubleshooting)
-7. [Verification Checklist](#verification-checklist)
+5. [Troubleshooting](#troubleshooting)
+6. [Verification Checklist](#verification-checklist)
 
 ---
 
@@ -399,36 +398,6 @@ ENABLE_OPT_SEARCH=1
 
 ---
 
-## Expected Results
-
-Based on the optimizations, you should see significant improvements:
-
-### Target Performance Table
-
-| Load | System | Avg(ms) | P95(ms) | Throughput(req/s) | Cache hit(%) |
-|------|--------|---------|---------|-------------------|-------------|
-| 50 | Baseline | ~490 | ~1140 | ~20 | 0% |
-| 50 | Gemini | ~216 | ~590 | ~22 | ~30% |
-| 150 | Baseline | 1200-1500 | 4500-5000 | 30-40 | 0% |
-| 150 | Gemini | 200-400 | 800-1500 | 60-80 | 50-70% |
-| 250 | Baseline | 2000-3000 | 8000-10000 | 25-40 | 0% |
-| 250 | Gemini | 400-900 | 1200-3000 | 90-130 | 40-70% |
-
-### Key Improvements
-
-- **4-8× latency reduction** (avg and P95)
-- **2-3× throughput improvement**
-- **Strong cache evidence** (40-70% cache hit ratio for Gemini)
-
-### Metrics Explanation
-
-- **Avg(ms)**: Average response time in milliseconds
-- **P95(ms)**: 95th percentile response time (95% of requests are faster than this)
-- **Throughput(req/s)**: Requests per second the system can handle
-- **Cache hit(%)**: Percentage of requests served from Redis cache (0% for baseline, 40-70% for Gemini)
-
----
-
 ## Troubleshooting
 
 ### Server Won't Start
@@ -550,8 +519,6 @@ After each test:
 
 - [ ] Metrics JSON file exists and has data
 - [ ] Locust CSV file exists and renamed correctly
-- [ ] Cache hit ratio is 0% for baseline tests
-- [ ] Cache hit ratio is 40-70% for Gemini tests
 - [ ] Metrics collected AFTER test completes
 
 After all tests:
@@ -559,7 +526,6 @@ After all tests:
 - [ ] All 6 JSON files exist (baseline: 50, 150, 250; gemini: 50, 150, 250)
 - [ ] All 6 CSV files exist and are renamed correctly
 - [ ] Results table generated: `results/RESULTS_TABLE.md`
-- [ ] Results show clear improvements (Gemini faster than Baseline)
 
 ---
 

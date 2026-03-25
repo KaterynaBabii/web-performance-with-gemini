@@ -1,0 +1,34 @@
+[
+  {
+    "endpoint": "GET /products",
+    "raw_text": "Consider FTS or trigram indexing for text search path.",
+    "category": "FTS",
+    "accepted_by_human": true,
+    "invalid_or_hallucinated": false,
+    "safety_risk": "low"
+  },
+  {
+    "endpoint": "GET /users/:id/dashboard",
+    "raw_text": "Eliminate N+1 by joining orders and items in one query.",
+    "category": "n+1",
+    "accepted_by_human": true,
+    "invalid_or_hallucinated": false,
+    "safety_risk": "low"
+  },
+  {
+    "endpoint": "GET /recommendations/:userId",
+    "raw_text": "Application-level cache with stale-while-revalidate.",
+    "category": "cache",
+    "accepted_by_human": false,
+    "invalid_or_hallucinated": false,
+    "safety_risk": "medium"
+  },
+  {
+    "endpoint": "GLOBAL",
+    "raw_text": "Increase max_connections to 10000 without measuring pool usage.",
+    "category": "hallucination",
+    "accepted_by_human": false,
+    "invalid_or_hallucinated": true,
+    "safety_risk": "high"
+  }
+]

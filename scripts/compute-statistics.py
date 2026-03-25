@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Compute mean ± standard deviation for IEEE Access / resubmission.
+Compute mean ± standard deviation for repeated benchmark runs.
 Supports six load levels (50–300), 95% CIs, Welch t and Mann–Whitney U (p-values),
 and an optional ablation mode (results/ablation/*).
 """

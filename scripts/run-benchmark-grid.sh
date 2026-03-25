@@ -1,5 +1,5 @@
 #!/bin/bash
-# Run extended benchmark grid for IEEE article
+# Run extended benchmark grid (baseline vs optimized)
 # - Systems: baseline, gemini (optimized)
 # - Loads: 50, 100, 150, 200, 250, 300 users
 # - Repetitions: 10 per (system, load) condition

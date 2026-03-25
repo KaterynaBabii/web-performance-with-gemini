@@ -1,0 +1,74 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.org/web-gemini/llm_comparison/model_output.schema.json",
+  "title": "LLMPerformanceAdvisoryRun",
+  "type": "object",
+  "required": [
+    "run_id",
+    "model_id",
+    "prompt_version",
+    "diagnostics_bundle_id",
+    "temperature",
+    "raw_text",
+    "recommendations"
+  ],
+  "properties": {
+    "run_id": { "type": "string", "description": "Unique run UUID or slug" },
+    "model_id": {
+      "type": "string",
+      "description": "Exact API model string, e.g. gemini-2.0-flash, gpt-4o-2024-08-06"
+    },
+    "prompt_version": { "type": "string" },
+    "diagnostics_bundle_id": { "type": "string" },
+    "temperature": { "type": "number" },
+    "max_tokens": { "type": "integer" },
+    "timestamp_utc": { "type": "string", "format": "date-time" },
+    "raw_text": { "type": "string" },
+    "recommendations": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/recommendation" }
+    }
+  },
+  "$defs": {
+    "category": {
+      "type": "string",
+      "enum": [
+        "indexing",
+        "query_rewrite",
+        "caching",
+        "batching",
+        "transaction_handling",
+        "bottleneck_diagnosis",
+        "invalid_unsafe"
+      ]
+    },
+    "recommendation": {
+      "type": "object",
+      "required": ["id", "title", "primary_category"],
+      "properties": {
+        "id": { "type": "string" },
+        "title": { "type": "string" },
+        "detail": { "type": "string" },
+        "primary_category": { "$ref": "#/$defs/category" },
+        "secondary_categories": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "targets": {
+          "type": "object",
+          "properties": {
+            "tables": { "type": "array", "items": { "type": "string" } },
+            "routes": { "type": "array", "items": { "type": "string" } },
+            "queries": { "type": "array", "items": { "type": "string" } }
+          }
+        },
+        "evidence_citations": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "sql_snippets": { "type": "array", "items": { "type": "string" } },
+        "risk_notes": { "type": "string" }
+      }
+    }
+  }
+}

@@ -1,0 +1,54 @@
+{
+  "gold_id": "G-example-001",
+  "bundle_id": "bundle_v1",
+  "items": [
+    {
+      "id": "G1",
+      "canonical_key": "gin_fts_products",
+      "primary_category": "indexing",
+      "description": "Full-text or GIN-style indexing for product search path"
+    },
+    {
+      "id": "G2",
+      "canonical_key": "dashboard_n1_elimination",
+      "primary_category": "query_rewrite",
+      "description": "Remove N+1 on user dashboard data loading"
+    },
+    {
+      "id": "G3",
+      "canonical_key": "recommendations_cache_ttl",
+      "primary_category": "caching",
+      "description": "Cache recommendation responses with TTL and invalidation on write"
+    }
+  ],
+  "model_item_labels": [
+    {
+      "model_run_id": "example-gemini-001",
+      "item_id": "R1",
+      "maps_to_gold_id": "G1",
+      "match_type": "full",
+      "invalid_unsafe": false,
+      "quality": {
+        "correctness": 5,
+        "actionability": 5,
+        "novelty": 4,
+        "safety": 5,
+        "effort": 4
+      }
+    },
+    {
+      "model_run_id": "example-gemini-001",
+      "item_id": "R2",
+      "maps_to_gold_id": "G2",
+      "match_type": "full",
+      "invalid_unsafe": false,
+      "quality": {
+        "correctness": 4,
+        "actionability": 4,
+        "novelty": 3,
+        "safety": 5,
+        "effort": 4
+      }
+    }
+  ]
+}

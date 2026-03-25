@@ -1,0 +1,71 @@
+% Cross-model LLM comparison (offline performance advisory)
+% Fill cells from llm_comparison/analysis_out/*.csv after running analyze_llm_advisory_comparison.py
+
+\begin{table*}[t]
+\centering
+\caption{Performance advisory recommendations by primary category for identical diagnostic inputs and prompt version. Counts are mutually exclusive primary labels per item.}
+\label{tab:llm-category-counts}
+\begin{tabular}{lccccccc}
+\hline
+Model & Idx. & Qry. rew. & Cache & Batch & Txn. & Diag. & Inv. \\
+\hline
+Gemini  &  &  &  &  &  &  &  \\
+GPT-4   &  &  &  &  &  &  &  \\
+Claude  &  &  &  &  &  &  &  \\
+\hline
+\end{tabular}
+\end{table*}
+
+\begin{table}[t]
+\centering
+\caption{Pairwise Jaccard similarity of deduplicated recommendation canonical keys ($J=|A\cap B|/|A\cup B|$).}
+\label{tab:llm-jaccard}
+\begin{tabular}{l c}
+\hline
+Pair & $J$ \\
+\hline
+Gemini---GPT-4   &  \\
+Gemini---Claude  &  \\
+GPT-4---Claude   &  \\
+\hline
+\end{tabular}
+\end{table}
+
+\begin{table}[t]
+\centering
+\caption{Agreement with expert gold set and mean blinded Likert scores (1=low, 5=high; effort: 5=low implementation cost). $P_{\mathrm{gold}}$: fraction of items with \emph{full} gold match.}
+\label{tab:llm-human-agreement}
+\begin{tabular}{l c c c c c c c c c}
+\hline
+Model & $n$ & $P_{\mathrm{gold}}$ & part. & none & inv.\,\% & $\bar{C}$ & $\bar{A}$ & $\bar{N}$ & $\bar{S}$ \\
+\hline
+ &  &  &  &  &  &  &  &  &  \\
+\hline
+\end{tabular}
+\end{table}
+
+\begin{table}[t]
+\centering
+\caption{Illustrative invalid, unsafe, or hallucination-prone suggestions (counts in text; examples anonymized).}
+\label{tab:llm-invalid-examples}
+\begin{tabular}{p{0.18\linewidth} p{0.7\linewidth}}
+\hline
+Model & Example failure mode \\
+\hline
+ &  \\
+\hline
+\end{tabular}
+\end{table}
+
+\begin{table}[t]
+\centering
+\caption{Optional controlled implementation yield (Option~A only): fixed engineering budget per model, same branch snapshot.}
+\label{tab:llm-implementation-yield}
+\begin{tabular}{l c c c c}
+\hline
+Model & Budget (h) & $\Delta$ p95 (ms) & $\Delta$ RPS & Notes \\
+\hline
+ &  &  &  &  \\
+\hline
+\end{tabular}
+\end{table}

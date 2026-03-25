@@ -50,7 +50,7 @@ def check_outliers(values, threshold=2.0):
 # Example usage
 if __name__ == "__main__":
     print("="*80)
-    print("IEEE ACCESS STATISTICS COMPUTATION")
+    print("STATISTICS COMPUTATION")
     print("="*80)
     print()
     print("Paste your 3 run results below, or modify this script with your data.")

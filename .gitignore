@@ -9,3 +9,7 @@ __pycache__/
 # Ignores metrics/requests export dumps, Locust *_failures/_exceptions/_stats_history, etc.
 results/**/*.csv
 !results/**/locust_*.csv
+
+# LLM cross-model study: keep methodology + examples; ignore generated analysis CSVs
+llm_comparison/analysis_out/
+llm_comparison/analysis_out_demo/

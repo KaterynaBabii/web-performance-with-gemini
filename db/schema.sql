@@ -1,5 +1,4 @@
 -- Web Gemini Performance Testbed Schema
--- IEEE Access Research Database
 
 -- Products table (for search endpoint)
 CREATE TABLE IF NOT EXISTS products (

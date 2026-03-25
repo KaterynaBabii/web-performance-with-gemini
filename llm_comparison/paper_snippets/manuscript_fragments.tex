@@ -1,0 +1,37 @@
+% --- Methods (cross-model advisory comparison) ---
+% Adjust model_id strings and bundle/prompt versions to match your runs.
+
+\paragraph{Cross-model advisory comparison.}
+We compared three commercial large language models as \emph{offline} performance engineering advisors: \texttt{[Gemini model\_id]}, \texttt{[GPT-4 model\_id]}, and \texttt{[Claude model\_id]}.
+Each model received an identical, frozen diagnostic bundle comprising representative application code for product search, user dashboard, recommendations, and checkout; \texttt{EXPLAIN (ANALYZE, BUFFERS)} plans for slow paths; a \texttt{pg\_stat\_statements} aggregate excerpt; slow-query log snippets; and a Locust workload summary (throughput and latency percentiles).
+We used a single prompt template (version \texttt{[v]}, repository path \texttt{prompts/llm\_comparison\_task.md}) and required structured JSON output conforming to \texttt{llm\_comparison/schema/model\_output.schema.json}.
+Sampling temperature was \texttt{[0.0--0.2]} and maximum output tokens \texttt{[N]} for all models; browsing or tool use was disabled unless uniformly enabled.
+Recommendations were mapped to seven mutually exclusive primary categories: indexing, query rewrite, caching, batching, transaction handling, bottleneck diagnosis, and invalid/unsafe.
+Expert evaluators first defined a gold recommendation set from the bundle \emph{without} viewing model outputs, then labeled each model-generated item as full, partial, or no match to gold, flagged invalid or unsafe content, and provided blinded Likert ratings for correctness, actionability, novelty/relevance, safety, and estimated implementation effort.
+
+% --- Results ---
+\paragraph{Recommendation overlap and categories.}
+Table~\ref{tab:llm-category-counts} summarizes category counts.
+Pairwise Jaccard similarity of deduplicated recommendation keys (Table~\ref{tab:llm-jaccard}) was \texttt{[low/moderate/high]}, indicating \texttt{[redundant vs complementary]} suggestions across models under identical evidence.
+
+\paragraph{Quality and gold agreement.}
+Table~\ref{tab:llm-human-agreement} reports precision against the expert gold set (full matches), partial and non-match rates, mean quality scores, and the rate of unsafe or invalid items.
+Differences among models were \texttt{[small/moderate/large]} on these metrics for this single-bundle study.
+
+\paragraph{Invalid and hallucination-like suggestions.}
+Table~\ref{tab:llm-invalid-examples} lists representative failure modes (e.g., references to non-existent relations, dialect-incompatible syntax, or unsafe production changes without mitigation).
+We report the fraction of items flagged as \texttt{invalid\_unsafe} in the structured output and during expert review.
+
+% --- Discussion ---
+\paragraph{Interpretation.}
+Similarity on identical inputs supports a \emph{limited} claim: frontier models often surface overlapping \emph{classes} of remediation (indexes, batching, caching) for the same anti-patterns, but specific SQL and prioritization differ.
+We do not equate advisory overlap with equivalence on unseen systems, prompts, or organizational constraints.
+
+% --- Limitations ---
+\paragraph{Limitations (cross-model study).}
+The comparison uses one application snapshot and one prompt instantiation; statistical generality is therefore bounded.
+We evaluated advisory text rather than autonomous runtime control.
+Unless Table~\ref{tab:llm-implementation-yield} is populated by a controlled implementation arm with fixed effort per model, we do not attribute end-to-end latency improvements to a particular LLM.
+
+% --- Minimal publishable sentence (Option B) ---
+% Under identical diagnostic inputs and prompting, we report category distributions, pairwise Jaccard overlap on deduplicated items, precision against an expert-derived gold set, and invalid-suggestion rates for Gemini, GPT-4, and Claude as offline advisors; we do not claim model-agnostic optimization without additional bundles and optional controlled implementation.

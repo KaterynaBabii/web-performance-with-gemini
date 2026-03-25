@@ -1,0 +1,34 @@
+[
+  {
+    "endpoint": "GET /products",
+    "raw_text": "Expert gold: index the product search path (GIN/trigram or FTS).",
+    "category": "indexing",
+    "accepted_by_human": true,
+    "invalid_or_hallucinated": false,
+    "safety_risk": "low"
+  },
+  {
+    "endpoint": "GET /users/:id/dashboard",
+    "raw_text": "Expert gold: remove N+1 / batch or join dashboard queries.",
+    "category": "query_rewrite",
+    "accepted_by_human": true,
+    "invalid_or_hallucinated": false,
+    "safety_risk": "low"
+  },
+  {
+    "endpoint": "GET /recommendations/:userId",
+    "raw_text": "Expert gold: cache expensive recommendation query with defined TTL.",
+    "category": "caching",
+    "accepted_by_human": true,
+    "invalid_or_hallucinated": false,
+    "safety_risk": "medium"
+  },
+  {
+    "endpoint": "POST /checkout",
+    "raw_text": "Expert gold: transactional checkout for order + line items.",
+    "category": "transaction_handling",
+    "accepted_by_human": true,
+    "invalid_or_hallucinated": false,
+    "safety_risk": "low"
+  }
+]
