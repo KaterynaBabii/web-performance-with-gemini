@@ -84,6 +84,12 @@ Assign **exactly one** primary category per recommendation:
 | **OBS** | Measurement / diagnosis | What to trace next, which metric to watch | No concrete next step |
 | **INV** | Invalid / unsafe / hallucinated | Wrong dialect, nonexistent tables/columns, destructive ops without staging | Borderline → mark **INV** if violates bundle schema |
 
+**Canonical overlap buckets (pre-registered):** For the Gemini–human overlap table, map categories to a small fixed set before matching:
+
+- **query_optimization**: `query_rewrite`, `n+1`, `join_optimization`, `indexing`, `fts`, `trigram`, `payload_reduction`, `response_size`  
+- **caching**: `caching`, `redis`  
+- **batching_txn**: `batching`, `transaction_handling`  
+
 ### 3.2 Target signature (for matching)
 
 Normalize to a single string, e.g.  

@@ -17,6 +17,23 @@ import pandas as pd
 from llm_comparison_lite.categories import normalize_category
 
 
+def normalize_endpoint(raw: str) -> str:
+    """
+    Canonicalize endpoints for matching:
+    - strip query string
+    - normalize path params to "{id}"
+    - collapse common variants (:id, [id], [userId])
+    """
+    if raw is None:
+        return ""
+    ep = str(raw).strip()
+    ep = ep.split("?", 1)[0]
+    ep = ep.replace(":id", "{id}")
+    ep = ep.replace("[id]", "{id}")
+    ep = ep.replace("[userId]", "{id}")
+    return ep
+
+
 def _as_bool(v: Any) -> bool:
     if isinstance(v, bool):
         return v
@@ -25,8 +42,16 @@ def _as_bool(v: Any) -> bool:
 
 def canonical_key(row: dict) -> str:
     """Primary category + endpoint string (lowercased) for exact match."""
-    ep = str(row.get("endpoint", "")).lower().strip()
+    ep = normalize_endpoint(row.get("endpoint", "")).lower().strip()
     cat = normalize_category(row.get("category", ""))
+    # Conceptual alignment for overlap (pre-registered bucket mapping).
+    # Collapse search/query-path optimizations into a single bucket.
+    if cat in ("query_rewrite", "n+1", "join_optimization", "indexing", "payload_reduction"):
+        cat = "query_optimization"
+    elif cat in ("caching",):
+        cat = "caching"
+    elif cat in ("batching", "transaction_handling"):
+        cat = "batching_txn"
     return f"{ep}||{cat}"
 
 

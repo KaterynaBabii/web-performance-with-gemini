@@ -5,9 +5,10 @@ const { recordDbQuery } = require('../metrics');
 const { client: redis, isRedisAvailable } = require('../redis');
 
 const APP_VERSION = process.env.APP_VERSION || 'baseline';
+const ENABLE_OPT_CHECKOUT = process.env.ENABLE_OPT_CHECKOUT === '1' || APP_VERSION === 'optimized';
 
 // POST /checkout
-if (APP_VERSION === 'optimized') {
+if (ENABLE_OPT_CHECKOUT) {
   // OPTIMIZED: Transaction, batch insert, cache invalidation
   router.post('/checkout', async (req, res) => {
     const { userId, items } = req.body;

@@ -1,0 +1,10 @@
+[
+  {
+    "endpoint": "GET /products?search=[term]",
+    "raw_text": "<human recommendation>",
+    "category": "<indexing|query_rewrite|caching|batching|transaction_handling|other>",
+    "accepted_by_human": true,
+    "invalid_or_hallucinated": false,
+    "safety_risk": "low"
+  }
+]

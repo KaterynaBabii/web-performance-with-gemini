@@ -5,6 +5,7 @@ const { recordDbQuery } = require('../metrics');
 const { client: redis, isRedisAvailable } = require('../redis');
 
 const ENABLE_OPT_SEARCH = process.env.ENABLE_OPT_SEARCH === '1' || process.env.APP_VERSION === 'optimized';
+const ENABLE_PAYLOAD_REDUCTION = process.env.ENABLE_PAYLOAD_REDUCTION === '1' || process.env.APP_VERSION === 'optimized';
 
 // GET /products?search=...
 if (ENABLE_OPT_SEARCH) {
@@ -18,47 +19,68 @@ if (ENABLE_OPT_SEARCH) {
     try {
       // OPTIMIZATIONS:
       // 1. Use full-text search with GIN index
-      // 2. Select only needed columns (not *)
-      // 3. Add pagination
-      // 4. Use parameterized queries with proper types
-      const query = `
-        SELECT 
-          p.id,
-          p.name,
-          p.price,
-          p.category_id,
-          p.stock_quantity,
-          c.name as category_name
-        FROM products p
-        JOIN categories c ON p.category_id = c.id
-        WHERE to_tsvector('english', p.name || ' ' || COALESCE(p.description, '')) @@ plainto_tsquery('english', $1)
-           OR p.name ILIKE $2
-        ORDER BY p.created_at DESC
-        LIMIT $3 OFFSET $4
-      `;
+      // 2. Optionally reduce payload size (columns + pagination)
+      // 3. Use parameterized queries with proper types
+      let query = '';
+      let params = [];
+      if (ENABLE_PAYLOAD_REDUCTION) {
+        query = `
+          SELECT 
+            p.id,
+            p.name,
+            p.price,
+            p.category_id,
+            p.stock_quantity,
+            c.name as category_name
+          FROM products p
+          JOIN categories c ON p.category_id = c.id
+          WHERE to_tsvector('english', p.name || ' ' || COALESCE(p.description, '')) @@ plainto_tsquery('english', $1)
+             OR p.name ILIKE $2
+          ORDER BY p.created_at DESC
+          LIMIT $3 OFFSET $4
+        `;
+        params = [search, `%${search}%`, limit, offset];
+      } else {
+        query = `
+          SELECT p.*, c.name as category_name, c.parent_id
+          FROM products p
+          JOIN categories c ON p.category_id = c.id
+          WHERE to_tsvector('english', p.name || ' ' || COALESCE(p.description, '')) @@ plainto_tsquery('english', $1)
+             OR p.name ILIKE $2
+          ORDER BY p.created_at DESC
+        `;
+        params = [search, `%${search}%`];
+      }
       
       const dbStart = Date.now();
-      const result = await pool.query(query, [search, `%${search}%`, limit, offset]);
+      const result = await pool.query(query, params);
       const dbDuration = Date.now() - dbStart;
       recordDbQuery(query, dbDuration);
       
-      // Get total count for pagination
-      const countQuery = `
-        SELECT COUNT(*) as total
-        FROM products p
-        WHERE to_tsvector('english', p.name || ' ' || COALESCE(p.description, '')) @@ plainto_tsquery('english', $1)
-           OR p.name ILIKE $2
-      `;
-      const countResult = await pool.query(countQuery, [search, `%${search}%`]);
+      if (ENABLE_PAYLOAD_REDUCTION) {
+        // Get total count for pagination
+        const countQuery = `
+          SELECT COUNT(*) as total
+          FROM products p
+          WHERE to_tsvector('english', p.name || ' ' || COALESCE(p.description, '')) @@ plainto_tsquery('english', $1)
+             OR p.name ILIKE $2
+        `;
+        const countResult = await pool.query(countQuery, [search, `%${search}%`]);
+        res.json({
+          products: result.rows,
+          pagination: {
+            page,
+            limit,
+            total: parseInt(countResult.rows[0].total),
+            totalPages: Math.ceil(parseInt(countResult.rows[0].total) / limit)
+          }
+        });
+        return;
+      }
 
       res.json({
         products: result.rows,
-        pagination: {
-          page,
-          limit,
-          total: parseInt(countResult.rows[0].total),
-          totalPages: Math.ceil(parseInt(countResult.rows[0].total) / limit)
-        }
+        count: result.rows.length
       });
     } catch (error) {
       console.error('Error fetching products:', error);

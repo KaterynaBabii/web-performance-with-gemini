@@ -7,9 +7,10 @@ const pool = new Pool({
   user: process.env.DB_USER || 'postgres',
   password: process.env.DB_PASSWORD || 'postgres',
   database: process.env.DB_NAME || 'web_gemini',
-  max: 50,  // Increased for high concurrent load (250 users)
+  max: 25,
   idleTimeoutMillis: 30000,
-  connectionTimeoutMillis: 10000,  // Increased timeout for high load
+  connectionTimeoutMillis: 10000,
+  allowExitOnIdle: false,
 });
 
 module.exports = pool;

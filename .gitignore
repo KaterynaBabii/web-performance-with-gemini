@@ -13,3 +13,7 @@ results/**/*.csv
 # LLM cross-model study: keep methodology + examples; ignore generated analysis CSVs
 llm_comparison/analysis_out/
 llm_comparison/analysis_out_demo/
+
+# Replication artifacts and generated outputs (large, run-specific)
+llm_comparison/bundles/**/artifacts/
+llm_comparison_lite/outputs/
